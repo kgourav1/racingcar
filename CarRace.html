@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .car , .enemy_car{
+            width: 50px;
+            height: 70px;
+            /* background-color: blue; */
+            position: absolute;
+            /* left: 100px; */
+            bottom: 100px;
+            background-image: url('car__1_-removebg-preview.png');
+            background-size: 120px 100px;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            z-index: 4;
+
+        }
+        body{
+            overflow: hidden;
+            background-image: url("https://previews.123rf.com/images/naykirin/naykirin1710/naykirin171000058/88391566-top-view-background-by-green-leaves-and-grass-texture-on-the-ground-green-grass-on-the-garden.jpg");
+        }
+        .enemy_car{
+            background-image: url('enemy.png');
+            background-size: 120px 100px;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+        }
+        #road{
+            background-color: black;
+            width: 300px;
+            height: 100vh;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+        }
+        .lines{
+            width: 10px;
+            height: 100px;
+            background-color: white;
+            position: absolute;
+            left:150px;
+        }
+        #gmovr{
+            width: 80vw;
+            height: 80vh;
+            background-color: rgb(223, 189, 189);
+            position: fixed;
+            left: 50%;
+            top:50%;
+            transform: translate(-50%,-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        #gmovr button{
+            background-color: blue;
+            border-radius: 10px;
+            color: white;
+            border: none;
+            outline: none;
+            padding: 20px;
+            margin: 20px 0px;
+            cursor: pointer;
+        }
+        #score{
+            width: 10vw;
+            height: 5vh;
+            background-color: rgb(8, 8, 8);
+            position: fixed;
+            left: 2%;
+            top:2%;
+            color:white;
+                        
+        }
+    </style>
+</head>
+<body>
+   
+    <div id="road">
+        <div class="car">
+
+        </div>
+        <div id="e_road">
+
+        </div>
+    </div>
+    <div id='gmovr'>
+            <h2>GAME OVER!!!</h2>
+            <button onclick="restart()">RESTART</button>
+    </div>
+    <div id="score">
+
+    </div>
+
+
+
+
+    <script>
+        document.addEventListener('keydown',keydown);
+        document.addEventListener('keyup',keyup);
+        var car=document.getElementsByClassName("car");
+        var div = document.getElementById("road");
+        var road = div.getBoundingClientRect();
+        var gamestart=true;
+        var score=0;
+        var eroad=document.getElementById('e_road');
+        for(var i=0;i<5;i++){
+            var line =document.createElement('div');
+            line.classList.add("lines");
+            line.y=(150*i);
+            line.style.top=line.y+"px";
+            div.appendChild(line);
+        }
+        function create_enemy(){
+            for(var i=0;i<3;i++){
+            var enemy =document.createElement('div');
+            enemy.classList.add("enemy_car");
+            // enemy.style.background='red';
+            enemy.y=(-300*(i +1));
+            enemy.style.top=enemy.y+"px";
+            enemy.style.left=Math.floor(Math.random()*200)+"px";
+            eroad.appendChild(enemy);
+        }
+        }
+       
+
+        var keys={
+            ArrowUp:false,ArrowDown:false,ArrowLeft:false,ArrowRight:false
+        }
+        function keydown(i){
+            // console.log(i.key);
+            keys[i.key]=true;
+        }
+        function keyup(j){
+            // console.log(j.key);
+            keys[j.key]=false;
+        }
+        function start(){
+            // window.requestAnimationFrame()
+            movelines();
+            movecar(car[0]);
+            var y=car[0].offsetTop;
+            var x=car[0].offsetLeft;
+            if(keys.ArrowUp && y>(road.top+70 )){
+                y-=5;
+            }
+            if(!keys.ArrowUp && y<(road.bottom-70)){
+                y+=5
+            }
+            if(keys.ArrowLeft && x>0){
+                x-=5;
+            }
+            if(keys.ArrowRight && x<(road.width-50)){
+                x+=5;
+            }
+            if(keys.ArrowDown && y<(road.bottom-70)){
+                y+=5;
+            }
+            car[0].style.left=x+"px";
+            car[0].style.top=y+"px";
+            if(gamestart){
+                score++;
+                document.getElementById('score').innerHTML=score;
+                window.requestAnimationFrame(start);
+               
+
+            }
+            
+            // console.log(car[0].offsetTop);
+            
+
+        }
+        function restart(){
+                var replay=document.getElementById('gmovr');
+                var e_cars=document.getElementsByClassName('enemy_car');
+                replay.style.display='none';
+                gamestart=true;
+                for(var i=0;i<e_cars.length;i++){
+                    eroad.removeChild(e_cars[i]);
+                }
+                car[0].style.top="";
+                car[0].style.left="";
+                score=0;
+                document.getElementsByClassName('board')[0].remove();
+                setTimeout(() => {
+                    create_enemy();
+                    start();
+                }, 500);
+               
+                
+            }
+        function movelines(){
+            var lines=document.getElementsByClassName('lines');
+            for(var i=0;i<5;i++){
+                if(lines[i].y>=700){
+                    lines[i].y-=750;
+                }
+                lines[i].y+=5;
+                lines[i].style.top=lines[i].y+"px";
+            }
+        }
+        function movecar(car){
+            var lines=document.getElementsByClassName('enemy_car');
+            for(var i=0;i<3;i++){
+                if(gameover(car,lines[i])){
+                    var replay=document.getElementById('gmovr');
+                    replay.style.display='flex';
+                    var score_board=document.createElement('div');
+                    score_board.classList.add('board');
+                    score_board.innerHTML='<h1>YOUR SCORE IS '+score+'</h1>';
+                    replay.appendChild(score_board);
+                    // alert('gameover');
+                    // console.log("gameover");
+                    gamestart=false;
+                }
+                if(lines[i].y>=700){
+                    lines[i].y-=750;
+                    lines[i].style.left=Math.floor(Math.random()*300)+"px";
+                }
+                lines[i].y+=5;
+                lines[i].style.top=lines[i].y+"px";
+            }
+        
+        }
+        function gameover(mycar,enemycar){
+            var a=mycar.getBoundingClientRect();
+            var b=enemycar.getBoundingClientRect();
+            if(a.bottom<b.top ||a.top>b.bottom ||a.right<b.left || a.left>b.right){
+                return false;
+            }
+            else{
+                return true;
+            }
+
+        }
+        create_enemy();
+        start();
+        
+
+    </script>
+</body>
+</html>
